@@ -1,5 +1,5 @@
 const FilterForm = require('../models/rental.cjs');
-//const sendEmail = require('../utils/sendmail.cjs');
+const sendMail = require('../utils/sendmail.cjs');
 const RenCon=async(req,res)=>{
   try {
     const {firstName,lastName,companyName,email,phoneNumber,rentalService , partDescription, } = req.body;
@@ -16,6 +16,62 @@ console.log('req',req)
 
 
     await newForm.save();
+
+
+      const adminSubject = "New Rental Service Form Submission";
+    const adminHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #0056b3;">New Rental Service Submission</h2>
+
+        <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+        <p><strong>Company Name:</strong> ${companyName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone Number:</strong> ${phoneNumber}</p>
+        <p><strong>Rental Service:</strong> ${rentalService}</p>
+        <p><strong>Description:</strong> ${partDescription}</p>
+
+        <hr/>
+        <p style="font-size: 13px; color: #888;">
+          This message was generated automatically from your website form.
+        </p>
+      </div>
+    `;
+
+    await sendMail({
+      to: "globalinfinity580@gmail.com", // your email
+      subject: adminSubject,
+      html: adminHtml,
+    });
+
+    console.log("✅ Admin notification email sent.");
+
+    // ============================
+    // 2) EMAIL TO CUSTOMER
+    // ============================
+
+    const clientSubject = "Thank You for Contacting Us!";
+    const clientHtml = `
+      <h3>Dear ${firstName},</h3>
+      <p>Thank you for contacting us regarding equipment rental. We have received your details and our team will contact you shortly.</p>
+
+      <p><strong>Your Submitted Information:</strong></p>
+      <ul>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Phone:</strong> ${phoneNumber}</li>
+        <li><strong>Rental Service:</strong> ${rentalService}</li>
+        <li><strong>Description:</strong> ${partDescription || "N/A"}</li>
+      </ul>
+
+      <p>Best Regards,<br/>Promed Solutions Team</p>
+    `;
+
+    await sendMail({
+      to: email, // customer's email
+      subject: clientSubject,
+      html: clientHtml,
+    });
+
+    console.log("✅ Customer confirmation email sent.");
 
   //  const subject = 'New Contact Form Submission';
   //         const html = `

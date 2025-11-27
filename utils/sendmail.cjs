@@ -1,52 +1,31 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
-const sendEmail = async ({ to, subject, text, html }) => {
-  try {
-    // Create transporter
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === "true", // true for 465
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.GMAIL_USER, 
+    pass: process.env.GMAIL_PASS, 
   },
 });
 
-
-console.log('📨 Sending email using:');
-console.log({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_SECURE,
-});
-
-
-    // Optional: verify connection (run once for testing)
-    transporter.verify((err) => {
-      if (err) console.log('❌ SMTP connection error:', err);
-      else console.log('✅ Mail server ready!');
-    });
-
-    // Mail options
-    const mailOptions = {
-      from: process.env.FROM_EMAIL,
-      to,             // receiver
+async function sendMail({ to, subject, text, html }) {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to,
       subject,
       text,
       html,
-    };
-
-    // Send mail
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent:', info.response);
-
+    });
+    console.log("Email sent:", info.messageId);
+    return info;
   } catch (err) {
-    console.error('❌ Error sending email:', err);
-    throw err;
+    console.error("Email sending failed:", err);
+    throw err; 
   }
-};
+}
 
 
 
-module.exports = sendEmail;
+module.exports = sendMail;
